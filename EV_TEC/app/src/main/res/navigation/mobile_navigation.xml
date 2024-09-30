@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_Inicio">
+
+    <fragment
+        android:id="@+id/navigation_Inicio"
+        android:name="com.example.ev_tec.ui.Inicio.InicioFragment"
+        android:label="Inicio"
+        tools:layout="@layout/fragment_Inicio" />
+
+    <fragment
+        android:id="@+id/navigation_Carga"
+        android:name="com.example.ev_tec.ui.Carga.CargaFragment"
+        android:label="@string/title_Carga"
+        tools:layout="@layout/fragment_Carga" />
+
+    <fragment
+        android:id="@+id/navigation_General"
+        android:name="com.example.ev_tec.ui.General.GeneralFragment"
+        android:label="@string/title_General"
+        tools:layout="@layout/fragment_General" />
+
+    <fragment
+        android:id="@+id/navigation_Usuario"
+        android:name="com.example.ev_tec.ui.Usuario.UsuarioFragment"
+        android:label="@string/title_Usuario"
+        tools:layout="@layout/fragment_Usuario" />
+</navigation>
