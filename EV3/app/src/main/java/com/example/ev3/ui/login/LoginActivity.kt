@@ -2,21 +2,20 @@ package com.example.ev3.ui.login
 
 import android.app.Activity
 import android.content.Intent
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.ev3.MainActivity
-import com.example.ev3.databinding.ActivityLoginBinding
-
 import com.example.ev3.R
+import com.example.ev3.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
 
@@ -60,8 +59,15 @@ class LoginActivity : AppCompatActivity() {
             }
             if (loginResult.success != null) {
                 updateUiWithUser(loginResult.success)
+
+
+                // Capturamos el correo ingresado (username)
+                val email = username.text.toString()
+
+
                 // Iniciar MainActivity cuando el login es exitoso
                 val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("USER_EMAIL", email)  // Pasamos el correo al intent
                 startActivity(intent)
             }
             setResult(Activity.RESULT_OK)

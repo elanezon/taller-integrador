@@ -7,7 +7,25 @@ import androidx.lifecycle.ViewModel
 class UsuarioViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is usuario Fragment"
+        value = ""
     }
     val text: LiveData<String> = _text
+
+    // LiveData para almacenar el correo del usuario
+    private val _userEmail = MutableLiveData<String>()
+    val userEmail: LiveData<String> = _userEmail
+
+    // LiveData para el código asociado
+    private val _codigo = MutableLiveData<String>()
+    val codigo: LiveData<String> = _codigo
+
+    // Método para actualizar el correo del usuario
+    fun setUserEmail(email: String) {
+        _userEmail.value = email
+    }
+
+    // Método para actualizar el código
+    fun setCodigo(nuevoCodigo: String) {
+        _codigo.value = nuevoCodigo
+    }
 }
