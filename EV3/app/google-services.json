@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "488146677947",
+    "firebase_url": "https://evtec-1971-default-rtdb.firebaseio.com",
+    "project_id": "evtec-1971",
+    "storage_bucket": "evtec-1971.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488146677947:android:697f011f17ee4afffb799e",
+        "android_client_info": {
+          "package_name": "com.example.ev3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "488146677947-v0vp5m21ktq9ge4e3l68qs9betncfmn4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbISW46_b-kkKXA6xvblqSsTVvctgqyK8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "488146677947-v0vp5m21ktq9ge4e3l68qs9betncfmn4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

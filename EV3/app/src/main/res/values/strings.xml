@@ -16,4 +16,5 @@
     <string name="title_informacion" />
     <string name="title_usuario" />
     <string name="hello_blank_fragment" />
+    <string name="default_web_client_id">488146677947-v0vp5m21ktq9ge4e3l68qs9betncfmn4.apps.googleusercontent.com</string>
 </resources>
