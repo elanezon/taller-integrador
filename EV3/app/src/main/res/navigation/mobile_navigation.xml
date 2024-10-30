@@ -9,7 +9,7 @@
         android:id="@+id/navigation_inicio"
         android:name="com.example.ev3.ui.inicio.InicioFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_inicio" />
 
     <fragment
         android:id="@+id/navigation_carga"

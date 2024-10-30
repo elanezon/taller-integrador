@@ -61,4 +61,6 @@ dependencies {
     // Dependencias para la autenticación de Firebase y Google Sign-In
     implementation(libs.firebase.auth.ktx)
     implementation(libs.play.services.auth)
+    implementation(libs.glide)
+    annotationProcessor (libs.compiler)
 }
