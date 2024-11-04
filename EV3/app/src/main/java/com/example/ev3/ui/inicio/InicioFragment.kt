@@ -4,6 +4,8 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Looper
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,11 +15,17 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.ev3.databinding.FragmentInicioBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class InicioFragment : Fragment() {
 
     private var _binding: FragmentInicioBinding? = null
     private val binding get() = _binding!!
+    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,11 +38,11 @@ class InicioFragment : Fragment() {
         _binding = FragmentInicioBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Setear el texto del TextView que sí existe en el XML
-        val textView: TextView = binding.chargerStatusTextView
-        inicioViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+        // Inicializar la Realtime Database
+        database = FirebaseDatabase.getInstance().getReference("estacionCarga/estado")
+
+        // Establecer el texto inicial del TextView
+        binding.chargerStatusTextView.text = "Estado de carga: --"
 
         // Configurar el botón para abrir Google Maps
         val buttonOpenMaps: Button = binding.openMapsButton
@@ -42,18 +50,58 @@ class InicioFragment : Fragment() {
             openGoogleMaps()  // Método para abrir Google Maps
         }
 
-        // Configurar otros botones si es necesario
+        // Configurar el botón para verificar el estado del cargador
         val buttonCheckCharger: Button = binding.checkChargerButton
         buttonCheckCharger.setOnClickListener {
-            // Lógica para verificar el estado del cargador
+            verificarEstadoCargador() // Lógica para verificar el estado del cargador
         }
 
+        // Configurar el botón para iniciar carga
         val buttonStartCharging: Button = binding.startChargingButton
         buttonStartCharging.setOnClickListener {
-            // Lógica para iniciar la carga
+            iniciarCarga() // Lógica para iniciar la carga
         }
 
         return root
+    }
+
+    private fun verificarEstadoCargador() {
+        // Obtener el estado del cargador desde la base de datos
+        database.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val estado = snapshot.getValue(String::class.java)
+                binding.chargerStatusTextView.text = "Estado de carga: $estado"
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), "Error al verificar estado", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun iniciarCarga() {
+        // Actualizar el estado de la base de datos a "En uso"
+        database.setValue("En uso").addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Toast.makeText(requireContext(), "Carga iniciada", Toast.LENGTH_SHORT).show()
+                binding.chargerStatusTextView.text = "Estado de carga: En uso" // Actualizar el TextView
+                programarLiberacionCarga()
+            } else {
+                Toast.makeText(requireContext(), "Error al iniciar carga", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun programarLiberacionCarga() {
+        // Liberar el estado de carga después de 1 minuto (60000 ms)
+        Handler(Looper.getMainLooper()).postDelayed({
+            database.setValue("Disponible").addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(requireContext(), "Carga liberada", Toast.LENGTH_SHORT).show()
+                    binding.chargerStatusTextView.text = "Estado de carga: Disponible" // Actualizar el TextView
+                }
+            }
+        }, 10000) // Cambia este valor si deseas una duración diferente
     }
 
     // Método para abrir Google Maps con una ubicación específica
