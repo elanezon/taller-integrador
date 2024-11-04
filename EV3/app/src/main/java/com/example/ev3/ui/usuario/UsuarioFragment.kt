@@ -37,6 +37,7 @@ class UsuarioFragment : Fragment() {
         // Configurar Google Sign-In options para obtener el GoogleSignInClient
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
+            .requestProfile() // Solicitar acceso al perfil para obtener la foto
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
@@ -44,11 +45,17 @@ class UsuarioFragment : Fragment() {
         // Obtener la cuenta de Google iniciada
         val account = GoogleSignIn.getLastSignedInAccount(requireContext())
 
-        account?.let {
-            // Mostrar el correo
-            binding.textUsuarioCorreo.text = "Correo: ${it.email}"
+        // Obtener datos de la actividad principal
+        val email = activity?.intent?.getStringExtra("USER_EMAIL")
+        val codigo = activity?.intent?.getStringExtra("USER_CODE")
 
-            // Mostrar la imagen de perfil usando Glide
+        // Mostrar el correo y el código
+        binding.textUsuarioCorreo.text = "Correo: $email"
+        binding.textUsuarioCodigo.text = "Código: $codigo"
+
+        // Mostrar la imagen de perfil usando Glide
+        account?.let {
+            // Mostrar la imagen de perfil
             val photoUrl = it.photoUrl
             if (photoUrl != null) {
                 Glide.with(this)
@@ -61,28 +68,14 @@ class UsuarioFragment : Fragment() {
             }
         }
 
-        // Observar el correo del usuario y mostrarlo
-        usuarioViewModel.userEmail.observe(viewLifecycleOwner) { email ->
-            binding.textUsuarioCorreo.text = "Correo: $email"  // Mostrar el correo con el prefijo "Correo: "
-        }
-
-        // Si también manejas un código, observarlo y mostrarlo
-        usuarioViewModel.codigo.observe(viewLifecycleOwner) { codigo ->
-            // Si tienes un TextView para el código, actualízalo aquí
-            // binding.codigoTextView.text = "Código: $codigo"
-        }
-
         // Configurar el botón de cierre de sesión
         binding.buttonLogout.setOnClickListener {
-            // Cerrar sesión de Google
             googleSignInClient.signOut().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Navegar a la actividad de Login
                     val intent = Intent(activity, LoginActivity::class.java)
                     startActivity(intent)
-                    requireActivity().finish() // Finalizar la actividad actual para prevenir volver a este fragmento
+                    requireActivity().finish()
                 } else {
-                    // Manejar el error si el cierre de sesión falla
                     Toast.makeText(activity, "Error al cerrar sesión", Toast.LENGTH_SHORT).show()
                 }
             }

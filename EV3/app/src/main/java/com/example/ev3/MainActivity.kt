@@ -22,18 +22,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val navView: BottomNavigationView = binding.navView
-
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
-        // Recibir el correo desde LoginActivity
+        // Recibir el correo y el código desde LoginActivity
         val userEmail = intent.getStringExtra("USER_EMAIL")
+        val codigo = intent.getStringExtra("USER_CODE")
 
         // Obtener el UsuarioViewModel
         val usuarioViewModel = ViewModelProvider(this)[UsuarioViewModel::class.java]
 
-        // Pasar el correo al ViewModel
+        // Pasar el correo y el codigo al ViewModel
         userEmail?.let {
             usuarioViewModel.setUserEmail(it)
+        }
+        codigo?.let {
+            usuarioViewModel.setCodigo(it)
         }
 
         // Passing each menu ID as a set of Ids because each

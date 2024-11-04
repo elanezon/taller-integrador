@@ -23,11 +23,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: DatabaseReference // Referencia a Realtime Database
     private val RC_SIGN_IN = 9001
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +39,9 @@ class LoginActivity : AppCompatActivity() {
 
         // Inicializar Firebase Auth
         auth = FirebaseAuth.getInstance()
+
+        // Inicializar Realtime Database
+        db = FirebaseDatabase.getInstance().getReference("usuarios")
 
         // Configurar Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -78,20 +85,65 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, navigate to MainActivity
+                    // Inicio de sesión exitoso, obtener el usuario
                     val user = auth.currentUser
                     user?.let {
                         val email = it.email
-                        // Pasar el correo al MainActivity
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.putExtra("USER_EMAIL", email) // Pasamos el correo al intent
-                        startActivity(intent)
-                        finish()
-                    }
+                        val uid = it.uid // UID del usuario para identificarlo en Realtime Database
+                        val photoUrl = it.photoUrl?.toString()
+
+                        if (email != null) {
+                            // Revisar y obtener el código único en Realtime Database
+                            db.child(uid).get()
+                                .addOnSuccessListener { snapshot ->
+                                    var codigoUnico: String
+
+                                    if (snapshot.exists() && snapshot.child("codigo").value != null) {
+                                        // Si ya existe un código, obtén el valor
+                                        codigoUnico = snapshot.child("codigo").value.toString()
+                                    } else {
+                                        // Generar y guardar un nuevo código
+                                        codigoUnico = generarCodigoUnico()
+                                        val usuarioData = mapOf(
+                                            "codigo" to codigoUnico,
+                                            "email" to email,
+                                            "photoUrl" to photoUrl
+                                        )
+                                        db.child(uid).setValue(usuarioData)
+                                            .addOnSuccessListener {
+                                                Log.d("LoginActivity", "Código y datos de usuario guardados.")
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.w("LoginActivity", "Error al guardar datos: ", e)
+                                            }
+                                    }
+
+                                    // Pasar el correo y el código a MainActivity
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.putExtra("USER_EMAIL", email)
+                                    intent.putExtra("USER_CODE", codigoUnico)
+                                    intent.putExtra("USER_PHOTO_URL", photoUrl)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w("LoginActivity", "Error al obtener o crear el código", e)
+                                }
+                        } else {
+                            Log.e("LoginActivity", "El email del usuario es null.")
+                        }
+                    } ?: Log.e("LoginActivity", "Error: el usuario es null.")
                 } else {
-                    // Si el inicio de sesión falla, muestra un mensaje al usuario.
                     Log.w("LoginActivity", "signInWithCredential:failure", task.exception)
                 }
             }
+    }
+
+    // Función para generar un código único
+    private fun generarCodigoUnico(): String {
+        val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return (1..8)
+            .map { charset.random() }
+            .joinToString("")
     }
 }

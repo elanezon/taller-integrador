@@ -25,7 +25,7 @@ class UsuarioViewModel : ViewModel() {
     }
 
     // Método para actualizar el código
-    fun setCodigo(nuevoCodigo: String) {
-        _codigo.value = nuevoCodigo
+    fun setCodigo(Codigo: String) {
+        _codigo.value = Codigo
     }
 }
