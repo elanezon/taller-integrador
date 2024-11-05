@@ -1,58 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.carga.CargaFragment">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
 
-    <!-- Timer de carga -->
+    <!-- TextView para mostrar el tiempo restante de carga -->
     <TextView
-        android:id="@+id/timerTextView"
+        android:id="@+id/timeRemainingTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tiempo de carga: 00:00"
-        android:textSize="20sp"
-        android:textAlignment="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
-
-    <!-- Ahorro de CO2 -->
-    <TextView
-        android:id="@+id/co2AhorroTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="CO2 ahorrado: 0 kg"
+        android:text="Tiempo restante: 10:00"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/timerTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp"/>
 
-    <!-- Costo por hora -->
+    <!-- Contenedor para el ProgressBar y el porcentaje centrado -->
+    <RelativeLayout
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp">
+
+        <!-- Barra de progreso circular grande -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:max="100"
+            android:progress="0"
+            android:indeterminate="false"
+            android:progressDrawable="@drawable/circular_progress_bar"/>
+
+        <!-- TextView para mostrar el porcentaje en el centro de la barra de progreso -->
+        <TextView
+            android:id="@+id/percentageTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="0%"
+            android:textSize="24sp"
+            android:textColor="@android:color/black"/>
+    </RelativeLayout>
+
+    <!-- TextView para mostrar el ahorro de CO₂ -->
     <TextView
-        android:id="@+id/costoTextView"
+        android:id="@+id/co2SavingsTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Costo por hora: 0.00 Colones"
+        android:text="CO₂ Ahorrado: 0g"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/co2AhorroTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp"/>
 
-    <!-- Información general de carga -->
+    <!-- TextView para mostrar el costo estimado de la carga -->
     <TextView
-        android:id="@+id/cargaGeneralTextView"
+        android:id="@+id/costTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Carga General: -"
+        android:text="Costo estimado: ₡0.00"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/costoTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp"/>
+</LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>

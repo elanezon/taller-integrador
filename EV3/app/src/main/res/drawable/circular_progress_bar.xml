@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo de la barra de progreso -->
+    <item android:id="@android:id/background">
+        <shape android:shape="ring"
+            android:innerRadiusRatio="3"
+            android:thicknessRatio="16"
+            android:useLevel="false">
+            <solid android:color="#E0E0E0"/> <!-- Color del fondo de la barra -->
+        </shape>
+    </item>
+
+    <!-- Progreso de la barra -->
+    <item android:id="@android:id/progress">
+        <shape android:shape="ring"
+            android:innerRadiusRatio="3"
+            android:thicknessRatio="16"
+            android:useLevel="true">
+            <solid android:color="#3F51B5"/> <!-- Color del progreso -->
+        </shape>
+    </item>
+
+</layer-list>

@@ -13,42 +13,35 @@ class CargaFragment : Fragment() {
 
     private var _binding: FragmentCargaBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var cargaViewModel: CargaViewModel
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        cargaViewModel = ViewModelProvider(this)[CargaViewModel::class.java]
-
         _binding = FragmentCargaBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        cargaViewModel = ViewModelProvider(this).get(CargaViewModel::class.java)
 
-        // Referencias a los TextViews en el layout
-        val timerTextView: TextView = binding.timerTextView
-        val co2AhorroTextView: TextView = binding.co2AhorroTextView
-        val costoTextView: TextView = binding.costoTextView
-
-        // Observar los cambios en el tiempo restante
-        cargaViewModel.tiempoRestante.observe(viewLifecycleOwner) { tiempoRestante ->
-            val minutos = tiempoRestante / 60
-            val segundos = tiempoRestante % 60
-            timerTextView.text = "Tiempo restante: $minutos:$segundos"
+        // Observa el tiempo restante y actualiza la UI
+        cargaViewModel.tiempoRestante.observe(viewLifecycleOwner) { tiempo ->
+            val porcentaje = ((600 - tiempo) / 600.0 * 100).toInt() // Calcula el porcentaje de progreso
+            binding.progressBar.progress = porcentaje
+            binding.percentageTextView.text = "$porcentaje%" // Actualiza el porcentaje mostrado en el centro
+            binding.timeRemainingTextView.text = "Tiempo restante: ${tiempo / 60}:${tiempo % 60}"
         }
 
-        // Observar los cambios en el ahorro de CO₂
-        cargaViewModel.co2Ahorro.observe(viewLifecycleOwner) { co2Ahorro ->
-            co2AhorroTextView.text = "CO₂ ahorrado: $co2Ahorro kg"
+
+        // Observa el ahorro de CO₂ y actualiza la UI
+        cargaViewModel.ahorroCO2.observe(viewLifecycleOwner) { co2 ->
+            binding.co2SavingsTextView.text = "CO₂ Ahorrado: ${co2}g"
         }
 
-        // Observar los cambios en el costo
-        cargaViewModel.costo.observe(viewLifecycleOwner) { costo ->
-            costoTextView.text = "Costo: $costo Colones"
+        // Observa el costo estimado y actualiza la UI
+        cargaViewModel.costoCarga.observe(viewLifecycleOwner) { costo ->
+            binding.costTextView.text = "Costo estimado: ₡${String.format("%.2f", costo)}"
         }
 
-        return root
+        return binding.root
     }
 
     override fun onDestroyView() {
