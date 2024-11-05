@@ -22,6 +22,9 @@ class CargaFragment : Fragment() {
         _binding = FragmentCargaBinding.inflate(inflater, container, false)
         cargaViewModel = ViewModelProvider(this).get(CargaViewModel::class.java)
 
+        // Rotar el ProgressBar 180 grados para que empiece desde la parte izquierda
+        binding.progressBar.rotation = -180f // Cambia a -180 para que inicie en las 9 del reloj
+
         // Observa el tiempo restante y actualiza la UI
         cargaViewModel.tiempoRestante.observe(viewLifecycleOwner) { tiempo ->
             val porcentaje = ((600 - tiempo) / 600.0 * 100).toInt() // Calcula el porcentaje de progreso
