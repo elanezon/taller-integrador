@@ -26,6 +26,10 @@ class InicioFragment : Fragment() {
     private var _binding: FragmentInicioBinding? = null
     private val binding get() = _binding!!
     private lateinit var database: DatabaseReference
+    private val handler = Handler(Looper.getMainLooper())
+    private val liberarCargaRunnable = Runnable {
+        liberarCarga()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,19 +50,19 @@ class InicioFragment : Fragment() {
 
         // Configurar el botón para abrir Google Maps
         val buttonOpenMaps: Button = binding.openMapsButton
-        buttonOpenMaps.setOnClickListener {
+        binding.openMapsButton.setOnClickListener {
             openGoogleMaps()  // Método para abrir Google Maps
         }
 
         // Configurar el botón para verificar el estado del cargador
         val buttonCheckCharger: Button = binding.checkChargerButton
-        buttonCheckCharger.setOnClickListener {
+        binding.checkChargerButton.setOnClickListener {
             verificarEstadoCargador() // Lógica para verificar el estado del cargador
         }
 
         // Configurar el botón para iniciar carga
         val buttonStartCharging: Button = binding.startChargingButton
-        buttonStartCharging.setOnClickListener {
+        binding.startChargingButton.setOnClickListener {
             iniciarCarga() // Lógica para iniciar la carga
         }
 
@@ -93,25 +97,26 @@ class InicioFragment : Fragment() {
     }
 
     private fun programarLiberacionCarga() {
-        // Liberar el estado de carga después de 1 minuto (60000 ms)
-        Handler(Looper.getMainLooper()).postDelayed({
-            database.setValue("Disponible").addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+        // Inicia el Runnable para liberar la carga después de 10 segundos
+        handler.postDelayed(liberarCargaRunnable, 10000)
+    }
+
+    private fun liberarCarga() {
+        database.setValue("Disponible").addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                if (_binding != null) {
                     Toast.makeText(requireContext(), "Carga liberada", Toast.LENGTH_SHORT).show()
-                    binding.chargerStatusTextView.text = "Estado de carga: Disponible" // Actualizar el TextView
+                    binding.chargerStatusTextView.text = "Estado de carga: Disponible"
                 }
             }
-        }, 10000) // Cambia este valor si deseas una duración diferente
+        }
     }
 
     // Método para abrir Google Maps con una ubicación específica
     private fun openGoogleMaps() {
-        // URI con el nombre de la ubicación
         val locationName = "EVTEC Station" // Cambia esto por el nombre deseado
         val gmmIntentUri = Uri.parse("geo:0,0?q=9.861828545473676,-83.91554636862311($locationName)")
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-
-        // Intenta iniciar la actividad sin especificar el paquete
         try {
             startActivity(mapIntent)
         } catch (e: ActivityNotFoundException) {
@@ -123,4 +128,11 @@ class InicioFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Asegúrate de eliminar el Runnable si el fragmento se destruye completamente
+        handler.removeCallbacks(liberarCargaRunnable)
+    }
 }
+
