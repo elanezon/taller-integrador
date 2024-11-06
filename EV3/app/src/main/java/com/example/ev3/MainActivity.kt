@@ -10,6 +10,9 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.ev3.databinding.ActivityMainBinding
 import com.example.ev3.ui.usuario.UsuarioViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,6 +20,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val database = FirebaseDatabase.getInstance()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

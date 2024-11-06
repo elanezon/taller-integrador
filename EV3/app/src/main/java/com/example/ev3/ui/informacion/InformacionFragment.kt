@@ -8,35 +8,42 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.ev3.databinding.FragmentInformacionBinding
-
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import androidx.lifecycle.Observer
+import android.graphics.Color
 
 class InformacionFragment : Fragment() {
 
-    private var _binding: FragmentInformacionBinding? = null
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    private lateinit var binding: FragmentInformacionBinding
+    private lateinit var informacionViewModel: InformacionViewModel
+    private lateinit var lineChart: LineChart
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val informacionViewModel =
-            ViewModelProvider(this)[InformacionViewModel::class.java]
+    ): View? {
+        binding = FragmentInformacionBinding.inflate(inflater, container, false)
+        lineChart = binding.lineChart
 
-        _binding = FragmentInformacionBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        // Obtener una instancia del ViewModel
+        informacionViewModel = ViewModelProvider(this).get(InformacionViewModel::class.java)
 
-        val textView: TextView = binding.textInformacion
-        informacionViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
-        return root
-    }
+        // Observar los datos de CO₂ ahorrado
+        informacionViewModel.ahorrosCO2.observe(viewLifecycleOwner, Observer { entries ->
+            // Crear un LineDataSet con los valores obtenidos
+            val dataSet = LineDataSet(entries, "CO₂ Ahorrado")
+            dataSet.color = Color.GREEN
+            dataSet.valueTextColor = Color.BLACK
+            // Crear LineData y asignarlo al gráfico
+            val lineData = LineData(dataSet)
+            lineChart.data = lineData
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+            // Actualizar el gráfico
+            lineChart.invalidate() // Refrescar el gráfico para mostrar los nuevos datos
+        })
+
+        return binding.root
     }
 }
