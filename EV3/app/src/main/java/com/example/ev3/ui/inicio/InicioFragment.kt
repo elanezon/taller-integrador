@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.ev3.databinding.FragmentInicioBinding
+import com.example.ev3.ui.informacion.InformacionViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -35,12 +36,16 @@ class InicioFragment : Fragment() {
     // Instancia del SharedViewModel
     private lateinit var sharedViewModel: SharedViewModel
 
+    // Instancia del InformacionViewModel
+    private lateinit var informacionViewModel: InformacionViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
+        informacionViewModel = ViewModelProvider(requireActivity()).get(InformacionViewModel::class.java)
 
         _binding = FragmentInicioBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -66,6 +71,10 @@ class InicioFragment : Fragment() {
         // Configurar el botón para iniciar carga
         binding.startChargingButton.setOnClickListener {
             iniciarCarga()
+            // Después de iniciar la carga, guarda el ahorro de CO₂ en la base de datos
+            sharedViewModel.ahorroCO2.observe(viewLifecycleOwner) { ahorroCO2 ->
+                informacionViewModel.guardarDatosCO2(ahorroCO2)
+            }
         }
 
         return root

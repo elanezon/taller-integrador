@@ -23,6 +23,20 @@ class InformacionViewModel : ViewModel() {
         obtenerDatosCO2()
     }
 
+    // Función para guardar los datos de CO₂ en Firebase
+    fun guardarDatosCO2(co2: Double) {
+        val timestamp = System.currentTimeMillis()  // Usar el tiempo actual como identificador
+        val data = mapOf("timestamp" to timestamp, "co2" to co2)
+
+        myRef.child(timestamp.toString()).setValue(data).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("InformacionViewModel", "Datos CO₂ guardados correctamente.")
+            } else {
+                Log.e("InformacionViewModel", "Error al guardar datos: ${task.exception?.message}")
+            }
+        }
+    }
+
     // Recupera los datos de Firebase y los convierte en una lista de "Entry" para el gráfico
     private fun obtenerDatosCO2() {
         myRef.addValueEventListener(object : ValueEventListener {
@@ -31,11 +45,13 @@ class InformacionViewModel : ViewModel() {
 
                 // Iterar sobre los datos recibidos desde Firebase
                 for (data in snapshot.children) {
-                    val co2 = data.getValue(Double::class.java) // Suponiendo que los valores de CO₂ son Double
-                    val timestamp = data.key?.toLong()
+                    // Acceder al "mapa" dentro de cada nodo de Firebase
+                    val co2 = data.child("co2").getValue(Double::class.java)  // Obtener el valor de CO₂
+                    val timestamp = data.child("timestamp").getValue(Long::class.java)  // Obtener el valor de timestamp
 
                     // Si se obtiene un valor válido de CO₂ y un timestamp
                     if (co2 != null && timestamp != null) {
+                        // Agregar la entrada al gráfico
                         entries.add(Entry(timestamp.toFloat(), co2.toFloat()))
                     }
                 }
