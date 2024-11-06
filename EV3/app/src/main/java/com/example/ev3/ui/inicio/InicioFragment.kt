@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,13 +32,15 @@ class InicioFragment : Fragment() {
         liberarCarga()
     }
 
+    // Instancia del SharedViewModel
+    private lateinit var sharedViewModel: SharedViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val inicioViewModel =
-            ViewModelProvider(this).get(InicioViewModel::class.java)
+        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         _binding = FragmentInicioBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -45,25 +48,24 @@ class InicioFragment : Fragment() {
         // Inicializar la Realtime Database
         database = FirebaseDatabase.getInstance().getReference("estacionCarga/estado")
 
-        // Establecer el texto inicial del TextView
-        binding.chargerStatusTextView.text = "Estado de carga: --"
+        // Observa el estado del cargador en el SharedViewModel y actualiza el TextView
+        sharedViewModel.chargerStatus.observe(viewLifecycleOwner) { status ->
+            binding.chargerStatusTextView.text = "Estado de carga: $status"
+        }
 
         // Configurar el botón para abrir Google Maps
-        val buttonOpenMaps: Button = binding.openMapsButton
         binding.openMapsButton.setOnClickListener {
-            openGoogleMaps()  // Método para abrir Google Maps
+            openGoogleMaps()
         }
 
         // Configurar el botón para verificar el estado del cargador
-        val buttonCheckCharger: Button = binding.checkChargerButton
         binding.checkChargerButton.setOnClickListener {
-            verificarEstadoCargador() // Lógica para verificar el estado del cargador
+            verificarEstadoCargador()
         }
 
         // Configurar el botón para iniciar carga
-        val buttonStartCharging: Button = binding.startChargingButton
         binding.startChargingButton.setOnClickListener {
-            iniciarCarga() // Lógica para iniciar la carga
+            iniciarCarga()
         }
 
         return root
@@ -74,7 +76,7 @@ class InicioFragment : Fragment() {
         database.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val estado = snapshot.getValue(String::class.java)
-                binding.chargerStatusTextView.text = "Estado de carga: $estado"
+                sharedViewModel.updateChargerStatus(estado ?: "Desconocido")
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -88,7 +90,8 @@ class InicioFragment : Fragment() {
         database.setValue("En uso").addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(requireContext(), "Carga iniciada", Toast.LENGTH_SHORT).show()
-                binding.chargerStatusTextView.text = "Estado de carga: En uso" // Actualizar el TextView
+                sharedViewModel.updateChargerStatus("En uso")
+                sharedViewModel.iniciarCarga()
                 programarLiberacionCarga()
             } else {
                 Toast.makeText(requireContext(), "Error al iniciar carga", Toast.LENGTH_SHORT).show()
@@ -97,8 +100,7 @@ class InicioFragment : Fragment() {
     }
 
     private fun programarLiberacionCarga() {
-        // Inicia el Runnable para liberar la carga después de 10 segundos
-        handler.postDelayed(liberarCargaRunnable, 10000)
+        handler.postDelayed(liberarCargaRunnable, 60000)
     }
 
     private fun liberarCarga() {
@@ -106,15 +108,14 @@ class InicioFragment : Fragment() {
             if (task.isSuccessful) {
                 if (_binding != null) {
                     Toast.makeText(requireContext(), "Carga liberada", Toast.LENGTH_SHORT).show()
-                    binding.chargerStatusTextView.text = "Estado de carga: Disponible"
+                    sharedViewModel.updateChargerStatus("Disponible")
                 }
             }
         }
     }
 
-    // Método para abrir Google Maps con una ubicación específica
     private fun openGoogleMaps() {
-        val locationName = "EVTEC Station" // Cambia esto por el nombre deseado
+        val locationName = "EVTEC Station"
         val gmmIntentUri = Uri.parse("geo:0,0?q=9.861828545473676,-83.91554636862311($locationName)")
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         try {
@@ -131,7 +132,6 @@ class InicioFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Asegúrate de eliminar el Runnable si el fragmento se destruye completamente
         handler.removeCallbacks(liberarCargaRunnable)
     }
 }
