@@ -10,24 +10,39 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
+import java.util.Locale
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class InformacionViewModel : ViewModel() {
 
     // MutableLiveData para contener los datos de CO₂ ahorrado
-    private val _ahorrosCO2 = MutableLiveData<List<Entry>>()  // Lista de entradas para el gráfico
+    private val _ahorrosCO2 = MutableLiveData<List<Entry>>()
     val ahorrosCO2: LiveData<List<Entry>> get() = _ahorrosCO2
 
     private val myRef = FirebaseDatabase.getInstance().getReference("ahorro_CO2")
+    private var totalCO2 = 0.0  // Variable para almacenar el total acumulado
 
     init {
         obtenerDatosCO2()
     }
 
-    // Función para guardar los datos de CO₂ en Firebase
+    // Función para guardar el CO₂ acumulativo en Firebase
     fun guardarDatosCO2(co2: Double) {
-        val timestamp = System.currentTimeMillis()  // Usar el tiempo actual como identificador
-        val data = mapOf("timestamp" to timestamp, "co2" to co2)
+        // Actualizar el total acumulado de CO₂
+        totalCO2 += co2
 
+        val timestamp = System.currentTimeMillis()
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        val fechaFormateada = sdf.format(Date(timestamp))
+
+        val data = mapOf(
+            "timestamp" to timestamp,
+            "co2" to totalCO2,  // Guardar el total acumulado en lugar del incremento
+            "fecha" to fechaFormateada
+        )
+
+        // Guardar el dato acumulativo en Firebase
         myRef.child(timestamp.toString()).setValue(data).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d("InformacionViewModel", "Datos CO₂ guardados correctamente.")
@@ -37,26 +52,23 @@ class InformacionViewModel : ViewModel() {
         }
     }
 
-    // Recupera los datos de Firebase y los convierte en una lista de "Entry" para el gráfico
+    // Recupera los datos acumulados de Firebase y los convierte en una lista de "Entry" para el gráfico
     private fun obtenerDatosCO2() {
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val entries = mutableListOf<Entry>()
+                totalCO2 = 0.0  // Reiniciar el total acumulado
 
-                // Iterar sobre los datos recibidos desde Firebase
                 for (data in snapshot.children) {
-                    // Acceder al "mapa" dentro de cada nodo de Firebase
-                    val co2 = data.child("co2").getValue(Double::class.java)  // Obtener el valor de CO₂
-                    val timestamp = data.child("timestamp").getValue(Long::class.java)  // Obtener el valor de timestamp
+                    val co2 = data.child("co2").getValue(Double::class.java)
+                    val timestamp = data.child("timestamp").getValue(Long::class.java)
 
-                    // Si se obtiene un valor válido de CO₂ y un timestamp
                     if (co2 != null && timestamp != null) {
-                        // Agregar la entrada al gráfico
-                        entries.add(Entry(timestamp.toFloat(), co2.toFloat()))
+                        totalCO2 = co2  // Obtener el valor acumulado de Firebase
+                        entries.add(Entry(timestamp.toFloat(), totalCO2.toFloat()))
                     }
                 }
 
-                // Actualizar la lista de entradas para el gráfico
                 _ahorrosCO2.value = entries
             }
 

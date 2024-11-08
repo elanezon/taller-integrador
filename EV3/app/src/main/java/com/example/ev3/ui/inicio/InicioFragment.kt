@@ -27,11 +27,6 @@ class InicioFragment : Fragment() {
 
     private var _binding: FragmentInicioBinding? = null
     private val binding get() = _binding!!
-    private lateinit var database: DatabaseReference
-    private val handler = Handler(Looper.getMainLooper())
-    private val liberarCargaRunnable = Runnable {
-        liberarCarga()
-    }
 
     // Instancia del SharedViewModel
     private lateinit var sharedViewModel: SharedViewModel
@@ -50,12 +45,15 @@ class InicioFragment : Fragment() {
         _binding = FragmentInicioBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Inicializar la Realtime Database
-        database = FirebaseDatabase.getInstance().getReference("estacionCarga/estado")
 
-        // Observa el estado del cargador en el SharedViewModel y actualiza el TextView
+        // Llamar a la función para verificar el estado del cargador al cargar la vista
+        sharedViewModel.verificarEstadoCargador()
+
+
+        // Observa el estado del cargador y actualiza la interfaz
         sharedViewModel.chargerStatus.observe(viewLifecycleOwner) { status ->
             binding.chargerStatusTextView.text = "Estado de carga: $status"
+            binding.startChargingButton.isEnabled = (status == "Disponible") // Habilitar solo si está disponible
         }
 
         // Configurar el botón para abrir Google Maps
@@ -63,65 +61,14 @@ class InicioFragment : Fragment() {
             openGoogleMaps()
         }
 
-        // Configurar el botón para verificar el estado del cargador
-        binding.checkChargerButton.setOnClickListener {
-            verificarEstadoCargador()
-        }
-
         // Configurar el botón para iniciar carga
         binding.startChargingButton.setOnClickListener {
-            iniciarCarga()
-            // Después de iniciar la carga, guarda el ahorro de CO₂ en la base de datos
-            sharedViewModel.ahorroCO2.observe(viewLifecycleOwner) { ahorroCO2 ->
-                informacionViewModel.guardarDatosCO2(ahorroCO2)
-            }
+            sharedViewModel.iniciarCargaSiDisponible()
         }
 
         return root
     }
 
-    private fun verificarEstadoCargador() {
-        // Obtener el estado del cargador desde la base de datos
-        database.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val estado = snapshot.getValue(String::class.java)
-                sharedViewModel.updateChargerStatus(estado ?: "Desconocido")
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(requireContext(), "Error al verificar estado", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun iniciarCarga() {
-        // Actualizar el estado de la base de datos a "En uso"
-        database.setValue("En uso").addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toast.makeText(requireContext(), "Carga iniciada", Toast.LENGTH_SHORT).show()
-                sharedViewModel.updateChargerStatus("En uso")
-                sharedViewModel.iniciarCarga()
-                programarLiberacionCarga()
-            } else {
-                Toast.makeText(requireContext(), "Error al iniciar carga", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun programarLiberacionCarga() {
-        handler.postDelayed(liberarCargaRunnable, 60000)
-    }
-
-    private fun liberarCarga() {
-        database.setValue("Disponible").addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                if (_binding != null) {
-                    Toast.makeText(requireContext(), "Carga liberada", Toast.LENGTH_SHORT).show()
-                    sharedViewModel.updateChargerStatus("Disponible")
-                }
-            }
-        }
-    }
 
     private fun openGoogleMaps() {
         val locationName = "EVTEC Station"
@@ -137,11 +84,6 @@ class InicioFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        handler.removeCallbacks(liberarCargaRunnable)
     }
 }
 

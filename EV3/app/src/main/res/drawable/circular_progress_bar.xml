@@ -7,7 +7,7 @@
             android:innerRadiusRatio="3"
             android:thicknessRatio="16"
             android:useLevel="false">
-            <solid android:color="#E0E0E0"/> <!-- Color del fondo de la barra -->
+            <solid android:color="@color/primaryColor2"/> <!-- Color del fondo de la barra -->
         </shape>
     </item>
 
@@ -17,7 +17,7 @@
             android:innerRadiusRatio="3"
             android:thicknessRatio="16"
             android:useLevel="true">
-            <solid android:color="#3F51B5"/> <!-- Color del progreso -->
+            <solid android:color="@color/white"/> <!-- Color del progreso -->
         </shape>
     </item>
 

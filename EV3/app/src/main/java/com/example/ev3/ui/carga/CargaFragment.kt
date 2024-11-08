@@ -42,7 +42,7 @@ class CargaFragment : Fragment() {
 
         // Observa el ahorro de CO₂ y actualiza la UI
         sharedViewModel.ahorroCO2.observe(viewLifecycleOwner) { co2 ->
-            binding.co2SavingsTextView.text = "CO₂ Ahorrado: ${co2}g"
+            binding.co2SavingsTextView.text = "CO₂ Ahorrado: ${co2}mg"
         }
 
         // Observa el costo estimado y actualiza la UI
